@@ -1,0 +1,7 @@
+CREATE TABLE transacoes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    descricao VARCHAR(255) NOT NULL,
+    valor DOUBLE NOT NULL,
+    data VARCHAR(10) NOT NULL,
+    tipo VARCHAR(10) NOT NULL
+);
