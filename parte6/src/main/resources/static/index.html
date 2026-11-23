@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Carteira</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem 1rem;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background-color: #f2f4f8;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #0f3d5e;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #0f3d5e;
+            color: #ffffff;
+        }
+
+        tbody tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .valor {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .tipo {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tipo-receita {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .tipo-despesa {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        #mensagem {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #mensagem.erro {
+            display: block;
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        #mensagem.info {
+            display: block;
+            background-color: #e0f2fe;
+            color: #075985;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Minha Carteira</h1>
+        <p>Transações cadastradas no banco de dados:</p>
+
+        <div id="mensagem"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody id="lista-transacoes"></tbody>
+        </table>
+    </main>
+
+    <script>
+        // Em uma máquina local o backend fica em localhost:8080.
+        // Quando a página é servida pelo próprio backend (como no Cloud Shell),
+        // usamos o endereço de onde ela foi aberta.
+        const API_URL = window.location.hostname === "localhost" || window.location.protocol === "file:"
+            ? "http://localhost:8080/transacoes"
+            : window.location.origin + "/transacoes";
+
+        const corpoTabela = document.getElementById("lista-transacoes");
+        const mensagem = document.getElementById("mensagem");
+
+        function mostrarMensagem(texto, classe) {
+            mensagem.textContent = texto;
+            mensagem.className = classe;
+        }
+
+        function formatarValor(valor) {
+            return Number(valor).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+            });
+        }
+
+        function renderizarTransacoes(transacoes) {
+            corpoTabela.innerHTML = "";
+
+            if (transacoes.length === 0) {
+                mostrarMensagem("Nenhuma transação cadastrada.", "info");
+                return;
+            }
+
+            transacoes.forEach(transacao => {
+                const linha = document.createElement("tr");
+
+                const celulaDescricao = document.createElement("td");
+                celulaDescricao.textContent = transacao.descricao;
+
+                const celulaValor = document.createElement("td");
+                celulaValor.className = "valor";
+                celulaValor.textContent = formatarValor(transacao.valor);
+
+                const celulaTipo = document.createElement("td");
+                const selo = document.createElement("span");
+                selo.className = "tipo tipo-" + String(transacao.tipo).toLowerCase();
+                selo.textContent = transacao.tipo;
+                celulaTipo.appendChild(selo);
+
+                linha.appendChild(celulaDescricao);
+                linha.appendChild(celulaValor);
+                linha.appendChild(celulaTipo);
+                corpoTabela.appendChild(linha);
+            });
+        }
+
+        function carregarTransacoes() {
+            fetch(API_URL)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Resposta inesperada do servidor: HTTP " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(transacoes => renderizarTransacoes(transacoes))
+                .catch(erro => {
+                    console.error("Erro ao buscar transações:", erro);
+                    mostrarMensagem(
+                        "Não foi possível carregar as transações. Verifique se o backend está em execução em " + API_URL + ".",
+                        "erro"
+                    );
+                });
+        }
+
+        carregarTransacoes();
+    </script>
+</body>
+</html>

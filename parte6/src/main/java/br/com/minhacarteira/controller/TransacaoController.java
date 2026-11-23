@@ -3,6 +3,8 @@ package br.com.minhacarteira.controller;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import br.com.minhacarteira.service.TransacaoService;
 
 @RestController
 @RequestMapping("/transacoes")
+@CrossOrigin(origins = "*")
 public class TransacaoController {
 
     @Autowired
